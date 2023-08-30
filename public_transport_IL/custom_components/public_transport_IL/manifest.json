@@ -1,0 +1,11 @@
+{
+  "codeowners": ["ZeMeny"],
+  "config_flow": false,
+  "dependencies": [],
+  "documentation": "https://github.com/ZeMeny/homeassistant-public-transport-IL",
+  "domain": "public_transport_IL",
+  "iot_class": "calculated",
+  "name": "Public Transport IL",
+  "requirements": [],
+  "version": "1.0.0"
+}
