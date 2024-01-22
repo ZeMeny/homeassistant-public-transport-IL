@@ -63,9 +63,5 @@ def main():
     #arrivals = stop.getNextArrivals()
 
 
-class PublicTransportIL(hass.Hass):
-    def initialize(self):
-        self.
-
 if __name__ == '__main__':
     main()
