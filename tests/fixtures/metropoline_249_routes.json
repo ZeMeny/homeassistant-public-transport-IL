@@ -1,0 +1,12 @@
+{
+  "route_alternatives": [
+    {
+      "long_name": "Kfar Saba Central Bus Station/Platforms<->Carmelit Terminal/Hacarmel-Tel Aviv Yafo",
+      "short_name": "249"
+    },
+    {
+      "long_name": "Carmelit Terminal-Tel Aviv Yafo<->Kfar Saba Central Bus Station/Drop-off",
+      "short_name": "249"
+    }
+  ]
+}

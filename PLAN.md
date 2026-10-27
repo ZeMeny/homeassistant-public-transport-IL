@@ -90,7 +90,7 @@ Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transp
    - Parse ETA with `datetime.fromisoformat`. Keep an explicit offset as-is. Interpret a naive timestamp as `Asia/Jerusalem` via `zoneinfo`. A visit with an unparseable ETA is skipped. A payload that is not a JSON object, or a non-empty `errors` list, raises a typed source error.
    - Verify: `tests/test_parser.py::test_eta_timezone_offsets_and_naive_israel_local`, `tests/test_parser.py::test_missing_line_249_is_empty_success`, `tests/test_parser.py::test_live_flag_follows_producer`, and `tests/test_parser.py::test_invalid_stop_errors_raise`. All read local files.
 
-4. **Put HTTP behind a swappable source interface.**
+4. **[x] Put HTTP behind a swappable source interface.**
    - Add `source.py` with the snapshot dataclasses, an `ArrivalSource` protocol (`async_get_stop(stop_code)`, `async_operator_serves_line(operator_id, line_number)`), and typed errors for "stop not found", "source unavailable", and "bad response".
    - Add `curlbus.py` implementing the protocol with the shared `aiohttp` session from `homeassistant.helpers.aiohttp_client.async_get_clientsession`. Base URL is the public curlbus host, injectable so tests can point at a mock. One `GET /{stop_code}` per call, `Accept: application/json`, then the parser. `async_operator_serves_line` for operator `15` performs `GET /metropoline/{line}` and returns whether `route_alternatives` contains that `short_name`. The sensor module imports dataclasses and the coordinator, and does not import `curlbus`.
    - A single factory, `async_get_source(hass)`, is the only place that constructs `CurlbusClient`. A future SIRI client replaces that factory's return value.
