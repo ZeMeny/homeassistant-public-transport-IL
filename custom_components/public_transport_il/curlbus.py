@@ -20,6 +20,9 @@ from .source import (
 )
 
 CURLBUS_BASE_URL = "https://curlbus.app"
+# Under the coordinator's 60s interval so a black-holed connection fails
+# this refresh instead of keeping the previous snapshot for minutes.
+REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=10)
 _ACCEPT_JSON = {"Accept": "application/json"}
 _METROPOLINE_OPERATOR = "15"
 
@@ -73,7 +76,9 @@ class CurlbusClient:
         """GET one path and decode the body as JSON."""
         url = f"{self._base_url}/{path.lstrip('/')}"
         try:
-            async with self._session.get(url, headers=_ACCEPT_JSON) as response:
+            async with self._session.get(
+                url, headers=_ACCEPT_JSON, timeout=REQUEST_TIMEOUT
+            ) as response:
                 body = await response.text()
                 status = response.status
         except TimeoutError as err:

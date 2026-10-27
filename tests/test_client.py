@@ -3,10 +3,17 @@
 import json
 from pathlib import Path
 
+import aiohttp
 import pytest
 
-from custom_components.public_transport_il.curlbus import CurlbusClient
-from custom_components.public_transport_il.source import BadResponseError
+from custom_components.public_transport_il.curlbus import (
+    REQUEST_TIMEOUT,
+    CurlbusClient,
+)
+from custom_components.public_transport_il.source import (
+    BadResponseError,
+    SourceUnavailableError,
+)
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 _BASE_URL = "https://curlbus.test"
@@ -38,14 +45,31 @@ class _Response:
 class _Session:
     """Record GET calls and return a canned response."""
 
-    def __init__(self, body: str, status: int = 200) -> None:
+    def __init__(
+        self,
+        body: str,
+        status: int = 200,
+        *,
+        error: BaseException | None = None,
+    ) -> None:
         self._body = body
         self._status = status
+        self._error = error
         self.calls: list[tuple[str, dict[str, str]]] = []
+        self.timeouts: list[aiohttp.ClientTimeout | None] = []
 
-    def get(self, url: str, *, headers: dict[str, str] | None = None) -> _Response:
+    def get(
+        self,
+        url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout: aiohttp.ClientTimeout | None = None,
+    ) -> _Response:
         """Record the request and return the canned response."""
         self.calls.append((url, dict(headers or {})))
+        self.timeouts.append(timeout)
+        if self._error is not None:
+            raise self._error
         return _Response(self._body, self._status)
 
 
@@ -94,3 +118,20 @@ async def test_metropoline_line_lookup() -> None:
     other_client = CurlbusClient(other, base_url=_BASE_URL)
     assert await other_client.async_operator_serves_line("3", "249") is False
     assert other.calls == []
+
+
+async def test_timeout_becomes_source_unavailable() -> None:
+    """A request TimeoutError becomes SourceUnavailableError."""
+    session = _Session("", error=TimeoutError("timed out"))
+    client = CurlbusClient(session, base_url=_BASE_URL)
+
+    with pytest.raises(SourceUnavailableError) as raised:
+        await client.async_get_stop("20112")
+
+    assert isinstance(raised.value.__cause__, TimeoutError)
+    assert session.calls == [
+        (f"{_BASE_URL}/20112", {"Accept": "application/json"}),
+    ]
+    assert session.timeouts == [REQUEST_TIMEOUT]
+    assert REQUEST_TIMEOUT.total is not None
+    assert REQUEST_TIMEOUT.total < 60
