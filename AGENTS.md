@@ -46,3 +46,6 @@ Branch per task, small commits, open a PR to `main`; never push to `main`. CI (h
 - Use blocking I/O or `hassapi`
 - Commit tokens, HA credentials, or server addresses
 - Hammer curlbus: poll no faster than 60 s
+
+## Feature requests (issue flow)
+A new issue labelled `feature-request` starts the loop. The designer role (skill `dev-designer` from github.com/ZeMeny/meny-ai-skills) drafts `SPEC.md` as a PR that links the issue (`Refs #N`). The human approves the SPEC (gate A), then the plan (gate B, no code before this), then implementation, independent review and human merge. Each stage is recorded as a comment on the issue. Agents never merge and never push to main.
