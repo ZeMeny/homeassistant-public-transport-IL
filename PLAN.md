@@ -109,7 +109,7 @@ Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transp
 
 ### PR 3 — Config flow, options flow, sensors, README
 
-7. **Add the config flow.**
+7. **[x] Add the config flow.**
    - Add `config_flow.py` and `strings.json` / `translations/en.json`. The user step asks for `stop_code` and `line_number`. Both must be digits.
    - Validation calls the source, not `requests`: the stop must return a snapshot (curlbus `errors` becomes form error `invalid_stop`; connection and bad-body failures become `cannot_connect`). The line is accepted when the snapshot contains it, or when it does not and `async_operator_serves_line("15", line)` is true (the line exists for Metropoline but no vehicle is in the current window). Otherwise the form error is `line_not_found`. Ambiguous multi-operator lines use `ambiguous_line` as described above.
    - The entry stores `stop_code`, `line_number`, `operator_id`, `route_id` (empty string when the live window did not reveal one), and the stop name. The title is the line, the stop name, and the stop code. A second entry with the same stop, line, and operator aborts with `already_configured`.
@@ -117,20 +117,20 @@ Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transp
    - Set manifest `config_flow` to true.
    - Verify: `tests/test_config_flow.py::test_user_flow_stop_and_line_creates_one_device_per_stop` (two entries, stops 25629 and 20112, line 249, one device identifier per stop). Also `test_config_flow_rejects_unknown_stop`, `test_config_flow_accepts_metropoline_line_when_no_visit`, and `test_config_flow_rejects_ambiguous_line`. The flow tests patch `async_get_source` with a fake.
 
-8. **Add the options flow.**
+8. **[x] Add the options flow.**
    - `async_get_options_flow` returns a flow with the same two fields, prefilled from the entry. Validation is the same function as the user step.
    - On submit, `async_update_entry` replaces `stop_code`, `line_number`, `operator_id`, `route_id`, and the stop name, then `async_reload` runs. The entry is not removed.
    - The sensor unique id is `{stop_code}_{line_number}_{operator_id}`. Before creating entities, update the entity-registry unique id when the reloaded entry's key changed, so the previous entity is kept and retargeted.
    - Verify: `tests/test_config_flow.py::test_options_flow_changes_stop_and_line` submits a new stop and line, asserts they were validated through the fake source, asserts the entry data and the sensor follow the new pair, and asserts the old unique id is no longer a separate entity.
 
-9. **Add the sensor.**
+9. **[x] Add the sensor.**
    - Add `sensor.py`. One `CoordinatorEntity` per config entry. Device identifier `(DOMAIN, stop_code)`, device name from the Hebrew stop name. Entity name is the line number at that stop. Unique id as above.
    - `native_value` is the integer minutes until the next selected arrival, or `None` when the selection is empty. `device_class` is `SensorDeviceClass.DURATION`. `native_unit_of_measurement` is `UnitOfTime.MINUTES`. `available` follows the coordinator, so a failed update shows unavailable.
    - Attributes: `arrivals` (at most three objects with `eta` as an ISO timestamp that includes the offset, `minutes`, `headsign`, and `live`), `route_id`, `operator`, and `last_update` (the snapshot timestamp).
    - Icon `mdi:bus`.
    - Verify: `tests/test_sensor.py::test_state_is_minutes_until_next_arrival`, `tests/test_sensor.py::test_state_unknown_when_no_arrival`, `tests/test_sensor.py::test_attributes_include_next_three_arrivals`, `tests/test_sensor.py::test_missing_line_is_unknown_without_error_log` (caplog has no ERROR records across two coordinator cycles), and `tests/test_sensor.py::test_unavailable_until_next_success`.
 
-10. **Document install and the two example stops.**
+10. **[x] Document install and the two example stops.**
     - Rewrite root `README.md`: what the integration does; HACS custom-repository install of this GitHub URL, then restart and Add Integration; add it twice, once for stop `25629` line `249` (Gan HaIr / Rabin Square, Malkhei Israel, toward Glilot, GTFS route `10120`) and once for stop `20112` line `249` (Glilot interchange / Derech Namir, toward Gan HaIr, GTFS route `10119`); change either value later from Configure; the state is minutes, unknown when curlbus lists no arrival, unavailable when curlbus cannot be reached.
     - Data-source caveat in the same README: curlbus.app is an unofficial single-maintainer service, it needs no API key, it can disappear or change its JSON, the integration polls it at most every 60 seconds, and it is not the Ministry of Transport feed. Say that three operators use the number 249 and that matching uses route id or Metropoline agency 15 together with the stop code.
     - Verify: `tests/test_readme.py::test_readme_documents_install_examples_and_caveat` asserts the README contains `25629`, `20112`, `249`, HACS, and curlbus. Then read the rendered sections once. Full CI (`hassfest`, `hacs`, `ruff`, `pytest`) is green.

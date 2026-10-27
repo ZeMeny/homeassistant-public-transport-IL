@@ -33,7 +33,7 @@ def test_domain_and_hacs_metadata() -> None:
         "domain": "public_transport_il",
         "name": "Public Transport IL",
         "codeowners": ["@ZeMeny"],
-        "config_flow": False,
+        "config_flow": True,
         "documentation": GITHUB_REPO,
         "iot_class": "cloud_polling",
         "issue_tracker": f"{GITHUB_REPO}/issues",

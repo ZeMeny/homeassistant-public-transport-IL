@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
+from homeassistant.core import HomeAssistant
+
 
 class SourceError(Exception):
     """Base class for arrival-source failures."""
@@ -52,8 +54,8 @@ class StopSnapshot:
 class ArrivalSource(Protocol):
     """Swappable source of stop arrivals.
 
-    ``async_get_source`` is the only constructor of the concrete client.
-    A future SIRI client replaces that factory's return value.
+    ``async_get_source`` delegates to the only constructor of the concrete
+    client. A future SIRI client replaces that factory's return value.
     """
 
     async def async_get_stop(self, stop_code: str) -> StopSnapshot:
@@ -63,3 +65,14 @@ class ArrivalSource(Protocol):
         self, operator_id: str, line_number: str
     ) -> bool:
         """Return whether ``operator_id`` publishes ``line_number``."""
+
+
+def async_get_source(hass: HomeAssistant) -> ArrivalSource:
+    """Return the arrival source used by setup and the config flow.
+
+    The curlbus module remains the only place that constructs the concrete
+    client. This wrapper exists so callers do not import that module.
+    """
+    from .curlbus import async_get_source as curlbus_async_get_source
+
+    return curlbus_async_get_source(hass)

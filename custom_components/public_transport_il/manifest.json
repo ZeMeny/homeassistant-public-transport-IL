@@ -2,7 +2,7 @@
   "domain": "public_transport_il",
   "name": "Public Transport IL",
   "codeowners": ["@ZeMeny"],
-  "config_flow": false,
+  "config_flow": true,
   "documentation": "https://github.com/ZeMeny/homeassistant-public-transport-IL",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/ZeMeny/homeassistant-public-transport-IL/issues",

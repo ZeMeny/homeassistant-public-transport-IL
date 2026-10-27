@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Public Transport IL",
+        "description": "Enter the stop code and the line number.",
+        "data": {
+          "stop_code": "Stop code",
+          "line_number": "Line number"
+        }
+      }
+    },
+    "error": {
+      "invalid_stop": "Unknown stop code.",
+      "cannot_connect": "Unable to reach the arrival source.",
+      "line_not_found": "This line was not found for the stop.",
+      "ambiguous_line": "Several operators serve this line, and Metropoline is not one of them.",
+      "invalid_format": "Stop code and line number must be digits."
+    },
+    "abort": {
+      "already_configured": "This stop, line, and operator are already configured.",
+      "already_in_progress": "This stop, line, and operator are already being configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Public Transport IL",
+        "description": "Change the stop code or the line number. The new values are checked before they are saved.",
+        "data": {
+          "stop_code": "Stop code",
+          "line_number": "Line number"
+        }
+      }
+    },
+    "error": {
+      "invalid_stop": "Unknown stop code.",
+      "cannot_connect": "Unable to reach the arrival source.",
+      "line_not_found": "This line was not found for the stop.",
+      "ambiguous_line": "Several operators serve this line, and Metropoline is not one of them.",
+      "invalid_format": "Stop code and line number must be digits."
+    },
+    "abort": {
+      "already_configured": "This stop, line, and operator are already configured."
+    }
+  }
+}

@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Project overview
-Home Assistant custom integration showing real-time arrivals for an Israeli public-transport bus line at a given stop. Status: the package has an async curlbus client, a parser, and a 60 s per-stop coordinator. Config flow and sensors are still absent.
+Home Assistant custom integration showing real-time arrivals for an Israeli public-transport bus line at a given stop. Status: a config entry is one stop plus one line. Setup validates it through the arrival source, shares a 60 s coordinator per stop, and creates a sensor whose state is the minutes until the next arrival.
 
 ## Build & test
 ```bash
@@ -12,20 +12,21 @@ pytest
 ```
 
 ## Repo layout (current)
-- `custom_components/public_transport_il/` - Home Assistant integration package. Domain `public_transport_il`. Modules: `__init__.py` (`async_setup` returns true; no config flow yet), `const.py`, `manifest.json`, `source.py` (arrival-source interface), `parser.py`, `curlbus.py`, and `coordinator.py` (one 60 s coordinator per stop).
+- `custom_components/public_transport_il/` - Home Assistant integration package. Domain `public_transport_il`. Modules: `__init__.py` (setup and unload share one coordinator per stop), `config_flow.py` (user and options flows), `sensor.py`, `coordinator.py` (one 60 s coordinator per stop), `source.py` (arrival-source interface and `async_get_source`), `parser.py`, `curlbus.py`, `const.py`, `manifest.json` (`config_flow` true), `strings.json`, and `translations/en.json`.
 - `hacs.json` (repo root) - HACS metadata: `name`, `render_readme`, and `homeassistant`.
-- `tests/` - pytest suite (`test_init.py`, `test_manifest.py`, `test_parser.py`, `test_client.py`, `test_coordinator.py`). Parser, client, and coordinator tests read `tests/fixtures/` and do not call the network.
+- `tests/` - pytest suite (`test_init.py`, `test_manifest.py`, `test_parser.py`, `test_client.py`, `test_coordinator.py`, `test_config_flow.py`, `test_sensor.py`, `test_readme.py`). Tests read `tests/fixtures/` or use fakes and do not call the network.
 - `.github/workflows/ci.yml` - hassfest, HACS validation, ruff, and pytest.
 - `requirements_test.txt` and `pyproject.toml` - test and lint toolchain.
 
 ## Known issues
-- No config flow or sensor yet. The coordinator is not wired into setup until the config flow exists.
+- curlbus.app is an unofficial single-maintainer service. A bad response or an outage makes the entities unavailable until the next successful poll.
+- HACS brand validation stays ignored until `custom_components/public_transport_il/brand/icon.png` is added. That icon is outside the config flow and sensor work.
 
 ## Plan
 1. Restructure to `custom_components/public_transport_il/` + root `hacs.json`. Done.
 2. Async curlbus client (aiohttp) with a 60 s `DataUpdateCoordinator`. Done.
-3. Config flow: stop code + line number.
-4. Sensor: minutes to next bus; upcoming arrivals as attributes.
+3. Config flow: stop code + line number. Done. The options flow can change them later.
+4. Sensor: minutes to next bus; upcoming arrivals as attributes. Done.
 
 ## Data sources
 - curlbus.app: live, no key, but a one-person hobby service - may disappear; keep the client swappable.
