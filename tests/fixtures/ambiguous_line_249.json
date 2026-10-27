@@ -1,0 +1,39 @@
+{
+  "errors": null,
+  "timestamp": "2026-10-27T21:20:04+02:00",
+  "visits": {
+    "90002": [
+      {
+        "producer": "SIRI",
+        "eta": "2026-10-27 22:00:00+02:00",
+        "line_name": "249",
+        "operator_id": "3",
+        "route_id": "3001",
+        "destination_id": "111",
+        "static_info": {
+          "route": {
+            "agency": {"name": {"EN": "Egged"}},
+            "headsign": {"HE": "יעד א"}
+          }
+        }
+      },
+      {
+        "producer": "SIRI",
+        "eta": "2026-10-27 22:05:00+02:00",
+        "line_name": "249",
+        "operator_id": "5",
+        "route_id": "5001",
+        "destination_id": "222",
+        "static_info": {
+          "route": {
+            "agency": {"name": {"EN": "Dan"}},
+            "headsign": {"HE": "יעד ב"}
+          }
+        }
+      }
+    ]
+  },
+  "stop_info": {
+    "name": {"HE": "עמימות", "EN": "Ambiguous"}
+  }
+}

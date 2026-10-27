@@ -84,7 +84,7 @@ Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transp
 
 ### PR 2 — Async client, parser, and coordinator
 
-3. **Record fixtures and add a pure parser.**
+3. **[x] Record fixtures and add a pure parser.**
    - Commit trimmed JSON fixtures under `tests/fixtures/` (public curlbus data only; no cookies, tokens, or private hostnames). Include a real stop payload that contains Metropoline 249 (`route_id` `10119`, `operator_id` `15`), a real stop payload with no line 249, the invalid-stop `errors` body, plus small synthetic payloads for an ambiguous line 249, a non-`SIRI`/`GTFS-RT` producer, a `+03:00` offset, and a naive ETA.
    - Add `parser.py` with a pure function from the JSON object to a snapshot dataclass: stop code, Hebrew stop name, response timestamp, and arrivals. Each arrival has `route_id`, `line_name`, `operator_id`, operator display name, headsign, aware `eta`, `live`, and destination stop code.
    - Parse ETA with `datetime.fromisoformat`. Keep an explicit offset as-is. Interpret a naive timestamp as `Asia/Jerusalem` via `zoneinfo`. A visit with an unparseable ETA is skipped. A payload that is not a JSON object, or a non-empty `errors` list, raises a typed source error.
