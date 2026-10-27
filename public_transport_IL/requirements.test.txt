@@ -1,4 +1,0 @@
-pytest
-pytest-cov==2.9.0
-pytest-homeassistant-custom-component
-"requirements": ["gidgethub[aiohttp]==4.1.1"]
