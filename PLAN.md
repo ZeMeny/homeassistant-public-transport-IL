@@ -50,20 +50,28 @@ Headsign and the stop name shown on the device use the Hebrew strings curlbus al
 
 Each step is done on its own branch and pull request, in order. The suggested split is the one below: PR 1 is layout and CI, PR 2 is the client and coordinator, PR 3 is the flows, sensors, and README. Landing all of this in one pull request would mix a tree move, a new client, and UI flows, and a failure in any layer would be hard to revert.
 
+### Prerequisites outside the pull requests
+
+Before the HACS description, topics, and license checks can pass, Meny sets these on the GitHub repository. They are his tasks and are outside PR 1, PR 2, and PR 3:
+
+- A repository description.
+- Repository topics.
+- A `LICENSE` file on the default branch. GitHub reports the license from that branch, so a license that exists only on a pull-request branch does not satisfy the check.
+
 ### PR 1 — Restructure and CI
 
 1. **Move the integration to the HACS path and the lowercase domain.**
    - Create `custom_components/public_transport_il/` with `__init__.py`, `const.py`, and `manifest.json`.
    - `DOMAIN = "public_transport_il"`.
-   - Manifest: `domain` `public_transport_il`, `name` `Public Transport IL`, `codeowners` `["@ZeMeny"]`, `config_flow` false (no flow module exists yet), `documentation` and `issue_tracker` pointing at this GitHub repository, `iot_class` `cloud_polling`, `requirements` `[]`, `version` `0.1.0`. Omit `integration_type`.
+   - Manifest: `domain` `public_transport_il`, `name` `Public Transport IL`, `codeowners` `["@ZeMeny"]`, `config_flow` false (no flow module exists yet), `documentation` and `issue_tracker` pointing at this GitHub repository, `iot_class` `cloud_polling`, `requirements` `[]`, `version` `0.1.0`. Omit `integration_type`. `iot_class` is set only in this manifest. Hassfest requires the keys ordered `domain`, `name`, then alphabetical.
    - `async_setup` still returns true, so the package loads before the config flow exists.
-   - Add root [`hacs.json`](hacs.json): `name` `Public Transport IL`, `render_readme` true, `homeassistant` set to the minimum that matches the test harness (2024.11.0 or newer, Python 3.12), `iot_class` the HACS display value `Cloud Polling`.
+   - Add root [`hacs.json`](hacs.json) with the keys the HACS schema accepts: `name` `Public Transport IL`, `render_readme` true, and `homeassistant` `2025.1.4` (the core version installed by `pytest-homeassistant-custom-component==0.13.205` on Python 3.12). The schema rejects `iot_class`, so that key is not part of `hacs.json`.
    - Verify: `python -c "from custom_components.public_transport_il.const import DOMAIN; assert DOMAIN == 'public_transport_il'"`. hassfest in CI accepts the manifest. HACS validation in CI finds `hacs.json` and `custom_components/public_transport_il/`.
 
 2. **Add the test and lint toolchain, and delete the old tree.**
-   - Root `requirements_test.txt` lists `pytest`, `pytest-homeassistant-custom-component`, and `ruff`.
+   - Root `requirements_test.txt` lists `pytest`, `pytest-homeassistant-custom-component==0.13.205`, and `ruff`. That plugin release is the newest one that still supports Python 3.12, and it installs Home Assistant 2025.1.4. Newer releases of the plugin require Python 3.13 or 3.14.
    - Root `pyproject.toml` configures Ruff for Python 3.12 (line length 88, lint rules `E`, `F`, `I`, `UP`, `B`, `SIM`) and pytest `testpaths = ["tests"]`.
-   - `.github/workflows/ci.yml` runs four jobs on pull requests and on pushes to `main`: `hassfest` (`home-assistant/actions/hassfest`), `hacs` (`hacs/action` with `category: integration`), `ruff` (`ruff check` and `ruff format --check`), and `pytest` (Python 3.12, install `requirements_test.txt`, run `pytest`).
+   - `.github/workflows/ci.yml` runs four jobs on pull requests and on pushes to `main`: `hassfest` (`home-assistant/actions/hassfest`), `hacs` (`hacs/action` with `category: integration` and `ignore: brands`), `ruff` (`ruff check` and `ruff format --check`), and `pytest` (Python 3.12, install `requirements_test.txt`, run `pytest`). `ignore: brands` is temporary. The description, topics, and license checks pass once the prerequisites above are in place.
    - Move the existing setup test to `tests/test_init.py` importing `custom_components.public_transport_il`.
    - Add `tests/test_manifest.py::test_domain_and_hacs_metadata`.
    - Delete the whole `public_transport_IL/` directory, including its `hacs.json`, broken requirements file, `setup.cfg`, Python 3.7 pre-commit config, and uppercase-domain tests.
@@ -71,6 +79,8 @@ Each step is done on its own branch and pull request, in order. The suggested sp
    - Update the layout and known-issues sections of `AGENTS.md` so they describe the new tree. Leave the prototype listed until PR 2 deletes it.
    - Leave root `__init__.py` in place. pytest `testpaths` keeps it out of collection.
    - Verify: `ruff check .`, `ruff format --check .`, and `pytest` pass locally. The four CI jobs pass on the pull request.
+
+Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transport_il/brand/icon.png`, then remove `ignore: brands` from the HACS job.
 
 ### PR 2 — Async client, parser, and coordinator
 
@@ -129,7 +139,7 @@ Each step is done on its own branch and pull request, in order. The suggested sp
 
 | # | Acceptance criterion (from SPEC.md) | Proof |
 | --- | --- | --- |
-| 1 | The repo installs as a HACS custom repository, and hassfest and HACS validation pass in CI. | CI jobs `hassfest` and `hacs` in `.github/workflows/ci.yml`. Supporting test: `tests/test_manifest.py::test_domain_and_hacs_metadata`. |
+| 1 | The repo installs as a HACS custom repository, and hassfest and HACS validation pass in CI. | CI jobs `hassfest` and `hacs` (`hacs/action` with `ignore: brands` until the brand-icon follow-up) in `.github/workflows/ci.yml`. Supporting test: `tests/test_manifest.py::test_domain_and_hacs_metadata`. |
 | 2 | The UI asks for a stop code and a line number, validates them against curlbus, and creates one device per stop. | `tests/test_config_flow.py::test_user_flow_stop_and_line_creates_one_device_per_stop` |
 | 3 | Each stop and line has a sensor whose state is integer minutes until the next arrival, device class duration, unit min; unknown when no arrival is listed. | `tests/test_sensor.py::test_state_is_minutes_until_next_arrival` and `tests/test_sensor.py::test_state_unknown_when_no_arrival` |
 | 4 | Attributes include the next 3 arrivals (timezone-aware ETA, minutes, headsign, live or scheduled), route_id, operator, and last update time. | `tests/test_sensor.py::test_attributes_include_next_three_arrivals` |
@@ -191,9 +201,9 @@ Each step is done on its own branch and pull request, in order. The suggested sp
 ## Dependencies
 
 - Runtime: none added to `manifest.json` `requirements`. HTTP uses Home Assistant's shared aiohttp session. The standard library `zoneinfo` handles `Asia/Jerusalem`. Blocked imports: `requests`, `hassapi`, and any new third-party package.
-- Tests: `pytest` and `pytest-homeassistant-custom-component` (provides the `hass` fixture, `async_fire_time_changed`, and the recorder/time freezers the sensor tests need). Pin the plugin to the release chosen at implementation time, and set `hacs.json` `homeassistant` to that release's minimum core version.
+- Tests: `pytest` and `pytest-homeassistant-custom-component==0.13.205` on Python 3.12 (provides the `hass` fixture, `async_fire_time_changed`, and the recorder/time freezers the sensor tests need). That release installs Home Assistant 2025.1.4, which is the `hacs.json` `homeassistant` value. Newer plugin releases require Python 3.13 or 3.14.
 - Lint: `ruff`, installed from `requirements_test.txt` and run in CI.
-- CI actions: `actions/checkout`, `actions/setup-python`, `home-assistant/actions/hassfest`, `hacs/action`.
+- CI actions: `actions/checkout`, `actions/setup-python`, `home-assistant/actions/hassfest`, `hacs/action` (`category: integration`, `ignore: brands` until `custom_components/public_transport_il/brand/icon.png` exists).
 - Interpreter: Python 3.12.
 
 ## Risks
@@ -227,7 +237,7 @@ One pull request would be too large: it would combine a repository move, CI, a n
 
 1. The planning request approves SPEC.md for Gate A. SPEC.md's own status line is left as it is. Implementation waits for Gate B approval of this plan.
 2. Restructure the existing repository in place. The nested `public_transport_IL/` tree is removed in PR 1. The root prototype is removed in PR 2, after fixtures and parser tests cover the ETA and line-selection behavior worth keeping.
-3. Domain is `public_transport_il`. Manifest `iot_class` is `cloud_polling`. HACS `iot_class` is `Cloud Polling`. `integration_type` is omitted. Version for the new manifest is `0.1.0`. Code owners use `@ZeMeny`.
+3. Domain is `public_transport_il`. Manifest `iot_class` is `cloud_polling`, and that key is not copied into root `hacs.json` because the HACS schema rejects it. Hassfest requires manifest keys ordered `domain`, `name`, then alphabetical. `integration_type` is omitted. Version for the new manifest is `0.1.0`. Code owners use `@ZeMeny`.
 4. `config_flow` stays false in PR 1 and becomes true in PR 3, when `config_flow.py` exists, so hassfest does not see a flag without a flow module.
 5. One config entry is one stop plus one line. The device identifier is the stop code. The coordinator registry key is the stop code, with a subscriber count, and `update_interval` is 60 seconds.
 6. The only curlbus request per poll is `GET /{stop_code}`. Lines at the same stop share that response. Operator `15` is confirmed with `GET /metropoline/{line}` during config and options validation when the live window has no visit for that line.
@@ -249,3 +259,7 @@ One pull request would be too large: it would combine a repository move, CI, a n
 5. When a line number is served by several operators and Metropoline is not one of them, should the flow gain an operator field? This plan blocks that case with `ambiguous_line` and leaves the form as stop code plus line number, which is what the spec requires.
 6. Should v1 synthesize a scheduled ETA when curlbus returns no visit? This plan keeps the state unknown in that case.
 7. Are English-only config-flow strings enough for v1? Stop names and headsigns are still Hebrew, from the feed.
+
+## Changelog
+
+- 2026-10-27: Meny approved an amendment. Root `hacs.json` keeps `name`, `render_readme`, and `homeassistant` (`2025.1.4`) and omits `iot_class`, which stays `cloud_polling` only in `custom_components/public_transport_il/manifest.json`. The HACS job runs `hacs/action` with `ignore: brands` until `custom_components/public_transport_il/brand/icon.png` is added. Description, topics, and a default-branch `LICENSE` are Meny's tasks outside the PRs. Tests pin `pytest-homeassistant-custom-component==0.13.205` on Python 3.12. Hassfest requires manifest keys ordered `domain`, `name`, then alphabetical.
