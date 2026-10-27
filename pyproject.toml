@@ -1,0 +1,21 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+# Root __init__.py is the prototype kept until PR 2. It still imports hassapi
+# and uses blocking requests, so ruff cannot pass on it without rewriting it.
+extend-exclude = ["./__init__.py"]
+force-exclude = true
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Root __init__.py is the prototype. Pytest would import it as the parent
+# package and fail on hassapi. confcutdir stops that walk. pythonpath makes
+# custom_components importable. The asyncio settings match pytest-asyncio 0.24,
+# which is what pytest-homeassistant-custom-component==0.13.205 installs.
+addopts = "--confcutdir=tests"
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

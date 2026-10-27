@@ -60,7 +60,7 @@ Before the HACS description, topics, and license checks can pass, Meny sets thes
 
 ### PR 1 — Restructure and CI
 
-1. **Move the integration to the HACS path and the lowercase domain.**
+1. **Move the integration to the HACS path and the lowercase domain.** Done
    - Create `custom_components/public_transport_il/` with `__init__.py`, `const.py`, and `manifest.json`.
    - `DOMAIN = "public_transport_il"`.
    - Manifest: `domain` `public_transport_il`, `name` `Public Transport IL`, `codeowners` `["@ZeMeny"]`, `config_flow` false (no flow module exists yet), `documentation` and `issue_tracker` pointing at this GitHub repository, `iot_class` `cloud_polling`, `requirements` `[]`, `version` `0.1.0`. Omit `integration_type`. `iot_class` is set only in this manifest. Hassfest requires the keys ordered `domain`, `name`, then alphabetical.
@@ -68,7 +68,7 @@ Before the HACS description, topics, and license checks can pass, Meny sets thes
    - Add root [`hacs.json`](hacs.json) with the keys the HACS schema accepts: `name` `Public Transport IL`, `render_readme` true, and `homeassistant` `2025.1.4` (the core version installed by `pytest-homeassistant-custom-component==0.13.205` on Python 3.12). The schema rejects `iot_class`, so that key is not part of `hacs.json`.
    - Verify: `python -c "from custom_components.public_transport_il.const import DOMAIN; assert DOMAIN == 'public_transport_il'"`. hassfest in CI accepts the manifest. HACS validation in CI finds `hacs.json` and `custom_components/public_transport_il/`.
 
-2. **Add the test and lint toolchain, and delete the old tree.**
+2. **Add the test and lint toolchain, and delete the old tree.** Done
    - Root `requirements_test.txt` lists `pytest`, `pytest-homeassistant-custom-component==0.13.205`, and `ruff`. That plugin release is the newest one that still supports Python 3.12, and it installs Home Assistant 2025.1.4. Newer releases of the plugin require Python 3.13 or 3.14.
    - Root `pyproject.toml` configures Ruff for Python 3.12 (line length 88, lint rules `E`, `F`, `I`, `UP`, `B`, `SIM`) and pytest `testpaths = ["tests"]`.
    - `.github/workflows/ci.yml` runs four jobs on pull requests and on pushes to `main`: `hassfest` (`home-assistant/actions/hassfest`), `hacs` (`hacs/action` with `category: integration` and `ignore: brands`), `ruff` (`ruff check` and `ruff format --check`), and `pytest` (Python 3.12, install `requirements_test.txt`, run `pytest`). `ignore: brands` is temporary. The description, topics, and license checks pass once the prerequisites above are in place.

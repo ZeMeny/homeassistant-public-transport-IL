@@ -11,14 +11,16 @@ pytest
 ```
 
 ## Repo layout (current)
-- `__init__.py` (repo root) - prototype script; fetches arrivals from `https://curlbus.app/{stop_id}`.
-- `public_transport_IL/custom_components/public_transport_IL/` - HA integration skeleton (not wired up).
+- `__init__.py` (repo root) - prototype script; fetches arrivals from `https://curlbus.app/{stop_id}`. Kept until a later pull request ports it.
+- `custom_components/public_transport_il/` - Home Assistant integration package (`__init__.py`, `const.py`, `manifest.json`). Domain `public_transport_il`. `async_setup` returns true; no config flow yet.
+- `hacs.json` (repo root) - HACS metadata: `name`, `render_readme`, and `homeassistant`.
+- `tests/` - pytest suite (`test_init.py`, `test_manifest.py`).
+- `.github/workflows/ci.yml` - hassfest, HACS validation, ruff, and pytest.
+- `requirements_test.txt` and `pyproject.toml` - test and lint toolchain.
 
 ## Known issues
 - Prototype uses blocking `requests`; HA requires async I/O.
-- Imports AppDaemon `hassapi`; not valid in an HA integration.
-- Domain/manifest name must be lowercase (e.g. `public_transport_il`).
-- Not HACS-installable: needs `custom_components/<domain>/` and `hacs.json` at repo root.
+- Prototype imports AppDaemon `hassapi`; not valid in an HA integration.
 - No config flow, coordinator, or sensor.
 
 ## Plan
