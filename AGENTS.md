@@ -47,5 +47,18 @@ Branch per task, small commits, open a PR to `main`; never push to `main`. CI (h
 - Commit tokens, HA credentials, or server addresses
 - Hammer curlbus: poll no faster than 60 s
 
-## Feature requests (issue flow)
-A new issue labelled `feature-request` starts the loop. The designer role (skill `dev-designer` from github.com/ZeMeny/meny-ai-skills) drafts `SPEC.md` as a PR that links the issue (`Refs #N`). The human approves the SPEC (gate A), then the plan (gate B, no code before this), then implementation, independent review and human merge. Each stage is recorded as a comment on the issue. Agents never merge and never push to main.
+## Requests and bug reports (issue flow)
+Work can start two ways that feed the same loop:
+
+- (a) The human opens a GitHub issue using the Feature request or Bug report form and assigns it to `meny-bot`. The assignment is what starts the agent. The labels `feature-request` and `bug` are only for sorting.
+- (b) The human asks the assistant in chat, which opens the issue itself and then continues the same flow.
+
+Every request must have an issue so work is tracked.
+
+Features: the designer drafts `SPEC.md` as a PR that links the issue with `Refs #N`. The human approves the spec (gate A), then the plan (gate B, no code before this), then implementation, independent review, and human merge.
+
+Bugs: reproduce first and add a failing test. Write a short plan in the issue or PR for human approval when the fix is non-trivial, then fix, independent review, and human merge. Skip the SPEC unless the bug reveals a behavior change.
+
+Each stage is recorded as a comment on the issue. Agents never merge and never push to main.
+
+The labels `feature-request` and `bug` must exist in the repo.
