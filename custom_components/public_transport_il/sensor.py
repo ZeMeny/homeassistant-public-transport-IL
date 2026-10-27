@@ -35,13 +35,14 @@ _ATTRIBUTE_LIMIT = 3
 def _minutes_until(eta: datetime, now: datetime) -> int | None:
     """Return whole minutes until ``eta``, or None when it is too far past.
 
-    The value is the floor of the remaining seconds divided by 60, so a bus
-    due in 50 seconds is 0. A visit more than 30 seconds in the past is dropped.
+    The value is the floor of the remaining seconds divided by 60, clamped at
+    zero, so a bus due in 50 seconds or up to 30 seconds ago is 0. A visit
+    more than 30 seconds in the past is dropped.
     """
     remaining = (eta - now).total_seconds()
     if remaining < -_STALE_AFTER.total_seconds():
         return None
-    return math.floor(remaining / 60)
+    return max(0, math.floor(remaining / 60))
 
 
 def _async_retarget_unique_id(

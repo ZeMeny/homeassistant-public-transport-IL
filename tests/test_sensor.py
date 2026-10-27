@@ -158,6 +158,53 @@ async def test_state_is_minutes_until_next_arrival(
     assert hass.states.get(entity_id).state == "0"
 
 
+async def test_recent_past_eta_clamps_minutes_to_zero(
+    hass: HomeAssistant, freezer
+) -> None:
+    """A visit 20 seconds ago is 0 minutes and stays ahead of a later bus."""
+    now = datetime(2026, 10, 27, 21, 0, tzinfo=_OFFSET)
+    freezer.move_to(now)
+    just_left = now - timedelta(seconds=20)
+    later = now + timedelta(minutes=8)
+    snapshot = StopSnapshot(
+        stop_code="20112",
+        stop_name="מחלף גלילות/דרך נמיר",
+        timestamp=now,
+        arrivals=(
+            _arrival(eta=later, headsign="מאוחר"),
+            _arrival(eta=just_left, headsign="יצא"),
+        ),
+    )
+    source = FakeSource(snapshot)
+    _entry, entity_id = await _setup(
+        hass,
+        source,
+        stop_code="20112",
+        line_number="249",
+        operator_id="15",
+        route_id="10119",
+        stop_name=snapshot.stop_name,
+    )
+
+    state = hass.states.get(entity_id)
+    assert state is not None
+    assert state.state == "0"
+    assert state.attributes["arrivals"] == [
+        {
+            "eta": just_left.isoformat(),
+            "minutes": 0,
+            "headsign": "יצא",
+            "live": True,
+        },
+        {
+            "eta": later.isoformat(),
+            "minutes": 8,
+            "headsign": "מאוחר",
+            "live": True,
+        },
+    ]
+
+
 async def test_state_unknown_when_no_arrival(hass: HomeAssistant, freezer) -> None:
     """No selected arrival is unknown, and the entity stays available."""
     freezer.move_to(_RECORDED_NOW)
