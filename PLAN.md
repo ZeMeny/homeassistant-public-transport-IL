@@ -84,25 +84,25 @@ Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transp
 
 ### PR 2 — Async client, parser, and coordinator
 
-3. **Record fixtures and add a pure parser.**
+3. **[x] Record fixtures and add a pure parser.**
    - Commit trimmed JSON fixtures under `tests/fixtures/` (public curlbus data only; no cookies, tokens, or private hostnames). Include a real stop payload that contains Metropoline 249 (`route_id` `10119`, `operator_id` `15`), a real stop payload with no line 249, the invalid-stop `errors` body, plus small synthetic payloads for an ambiguous line 249, a non-`SIRI`/`GTFS-RT` producer, a `+03:00` offset, and a naive ETA.
    - Add `parser.py` with a pure function from the JSON object to a snapshot dataclass: stop code, Hebrew stop name, response timestamp, and arrivals. Each arrival has `route_id`, `line_name`, `operator_id`, operator display name, headsign, aware `eta`, `live`, and destination stop code.
    - Parse ETA with `datetime.fromisoformat`. Keep an explicit offset as-is. Interpret a naive timestamp as `Asia/Jerusalem` via `zoneinfo`. A visit with an unparseable ETA is skipped. A payload that is not a JSON object, or a non-empty `errors` list, raises a typed source error.
    - Verify: `tests/test_parser.py::test_eta_timezone_offsets_and_naive_israel_local`, `tests/test_parser.py::test_missing_line_249_is_empty_success`, `tests/test_parser.py::test_live_flag_follows_producer`, and `tests/test_parser.py::test_invalid_stop_errors_raise`. All read local files.
 
-4. **Put HTTP behind a swappable source interface.**
+4. **[x] Put HTTP behind a swappable source interface.**
    - Add `source.py` with the snapshot dataclasses, an `ArrivalSource` protocol (`async_get_stop(stop_code)`, `async_operator_serves_line(operator_id, line_number)`), and typed errors for "stop not found", "source unavailable", and "bad response".
    - Add `curlbus.py` implementing the protocol with the shared `aiohttp` session from `homeassistant.helpers.aiohttp_client.async_get_clientsession`. Base URL is the public curlbus host, injectable so tests can point at a mock. One `GET /{stop_code}` per call, `Accept: application/json`, then the parser. `async_operator_serves_line` for operator `15` performs `GET /metropoline/{line}` and returns whether `route_alternatives` contains that `short_name`. The sensor module imports dataclasses and the coordinator, and does not import `curlbus`.
    - A single factory, `async_get_source(hass)`, is the only place that constructs `CurlbusClient`. A future SIRI client replaces that factory's return value.
    - Verify: `tests/test_client.py::test_fetch_stop_uses_injected_session` asserts the request path and header against a mocked session and a fixture body. `tests/test_client.py::test_metropoline_line_lookup` covers the route-alternatives check. No test opens a connection to curlbus.
 
-5. **Add the 60-second coordinator, shared per stop.**
+5. **[x] Add the 60-second coordinator, shared per stop.**
    - Add `coordinator.py`. `PublicTransportCoordinator` is a `DataUpdateCoordinator` with `update_interval = timedelta(seconds=60)`. `_async_update_data` calls `async_get_stop`. Source-unavailable and bad-response errors become `UpdateFailed`. A stop that previously worked and later returns curlbus `errors` is also `UpdateFailed`.
    - A registry in `hass.data[DOMAIN]["coordinators"]`, keyed by stop code, holds one coordinator plus a subscriber count. The first subscriber creates it and performs the initial refresh. Another subscriber for the same stop reuses it and does not refresh again. The last unsubscribe drops the registry entry so an unused stop is not polled.
    - `select_arrivals(snapshot, line_number, operator_id, route_id)` implements the match order from the Approach section. An empty selection returns an empty tuple and does not log an error.
    - Verify: `tests/test_coordinator.py::test_coordinator_publishes_snapshot`, `tests/test_coordinator.py::test_unreachable_marks_update_failed`, `tests/test_coordinator.py::test_one_poll_per_60s_shared_by_stop` (two subscribers, a counting fake source, `async_fire_time_changed` by 60 seconds, exactly one extra fetch), and `tests/test_coordinator.py::test_missing_line_is_successful_empty_update`.
 
-6. **Delete the prototype once the fixtures and parser cover it.**
+6. **[x] Delete the prototype once the fixtures and parser cover it.**
    - Delete root `__init__.py`.
    - Remove the prototype from the layout section of `AGENTS.md`.
    - Verify: `pytest` still passes, `rg "hassapi|import requests" custom_components tests` finds nothing, and CI is green.

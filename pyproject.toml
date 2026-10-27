@@ -1,25 +1,15 @@
 [tool.ruff]
 target-version = "py312"
 line-length = 88
-# Root __init__.py is the prototype kept until PR 2 deletes it. Ruff reports
-# I001, F401, F841, and E501 there (import order, unused names, and line
-# length), and format wants a reformat. requests and hassapi are not
-# violations under E, F, I, UP, B, or SIM.
-extend-exclude = ["./__init__.py"]
-force-exclude = true
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# Default confcutdir is this directory. Root __init__.py makes it a package,
-# and test setup imports that file, which fails on the prototype's hassapi
-# import. --confcutdir=tests keeps the root out of that parent walk.
 # pythonpath makes custom_components importable. The asyncio settings match
 # pytest-asyncio 0.24, which pytest-homeassistant-custom-component==0.13.205
 # installs.
-addopts = "--confcutdir=tests"
 pythonpath = ["."]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"

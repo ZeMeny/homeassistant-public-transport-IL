@@ -1,0 +1,138 @@
+{
+  "errors": null,
+  "timestamp": "2026-10-27T21:20:05+02:00",
+  "visits": {
+    "25629": [
+      {
+        "producer": "SIRI",
+        "timestamp": "2026-10-27 21:19:39+02:00",
+        "stop_code": "25629",
+        "line_id": "7704",
+        "route_id": "7704",
+        "direction_id": "2",
+        "line_name": "48",
+        "operator_id": "15",
+        "destination_id": "38081",
+        "vehicle_ref": "55575804",
+        "eta": "2026-10-27 21:27:00+02:00",
+        "trip_id": "35231839_271026",
+        "status": null,
+        "departed": "2026-10-27 21:15:00+02:00",
+        "location": {
+          "lat": "32.074855",
+          "lon": "34.766437"
+        },
+        "static_info": {
+          "route": {
+            "destination": {
+              "code": "38081",
+              "name": {
+                "AR": "دفنا/ هتدهار",
+                "EN": "Dafna/HaTidhar",
+                "HE": "דפנה/התדהר"
+              },
+              "address": {
+                "street": "דפנה 2",
+                "city": "Ra'anana",
+                "platform": "",
+                "floor": "",
+                "city_multilingual": {
+                  "HE": "רעננה",
+                  "EN": "Ra'anana"
+                }
+              },
+              "location": {
+                "lat": 32.199608,
+                "lon": 34.883643
+              }
+            },
+            "agency": {
+              "name": {
+                "HE": "מטרופולין",
+                "EN": "Metropoline"
+              },
+              "url": "http://www.metropoline.com"
+            },
+            "headsign": {
+              "HE": "רעננה_א\"ת קריית אתגרים"
+            }
+          }
+        }
+      },
+      {
+        "producer": "SIRI",
+        "timestamp": "2026-10-27 15:56:26+02:00",
+        "stop_code": "25629",
+        "line_id": "7704",
+        "route_id": "7704",
+        "direction_id": "2",
+        "line_name": "48",
+        "operator_id": "15",
+        "destination_id": "38081",
+        "vehicle_ref": "61482603",
+        "eta": "2026-10-27 21:28:00+02:00",
+        "trip_id": "35231839_271026",
+        "status": null,
+        "departed": "2026-10-27 21:15:00+02:00",
+        "location": null,
+        "static_info": {
+          "route": {
+            "destination": {
+              "code": "38081",
+              "name": {
+                "AR": "دفنا/ هتدهار",
+                "EN": "Dafna/HaTidhar",
+                "HE": "דפנה/התדהר"
+              },
+              "address": {
+                "street": "דפנה 2",
+                "city": "Ra'anana",
+                "platform": "",
+                "floor": "",
+                "city_multilingual": {
+                  "HE": "רעננה",
+                  "EN": "Ra'anana"
+                }
+              },
+              "location": {
+                "lat": 32.199608,
+                "lon": 34.883643
+              }
+            },
+            "agency": {
+              "name": {
+                "HE": "מטרופולין",
+                "EN": "Metropoline"
+              },
+              "url": "http://www.metropoline.com"
+            },
+            "headsign": {
+              "HE": "רעננה_א\"ת קריית אתגרים"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "stop_info": {
+    "name": {
+      "AR": "ساحة رابين/ ملَخي يسرائيل",
+      "EN": "Rabin Square/Malkhe Israel",
+      "HE": "כיכר רבין/מלכי ישראל"
+    },
+    "address": {
+      "street": "מלכי ישראל 4",
+      "city": "Tel Aviv Yafo",
+      "platform": "",
+      "floor": "",
+      "city_multilingual": {
+        "HE": "תל אביב יפו",
+        "EN": "Tel Aviv Yafo"
+      }
+    },
+    "location": {
+      "lat": 32.079416,
+      "lon": 34.780372
+    }
+  }
+}

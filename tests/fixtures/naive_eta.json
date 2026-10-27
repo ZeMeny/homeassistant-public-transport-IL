@@ -1,0 +1,53 @@
+{
+  "errors": null,
+  "timestamp": "2026-10-27T18:00:00+02:00",
+  "visits": {
+    "90001": [
+      {
+        "producer": "SIRI",
+        "eta": "2026-10-27 21:48:00",
+        "line_name": "249",
+        "operator_id": "15",
+        "route_id": "naive",
+        "destination_id": "25354",
+        "static_info": {
+          "route": {
+            "agency": {"name": {"EN": "Metropoline"}},
+            "headsign": {"HE": "נאיבי"}
+          }
+        }
+      },
+      {
+        "producer": "SIRI",
+        "eta": "2026-07-01 12:00:00+03:00",
+        "line_name": "249",
+        "operator_id": "15",
+        "route_id": "plus03",
+        "destination_id": "25354",
+        "static_info": {
+          "route": {
+            "agency": {"name": {"EN": "Metropoline"}},
+            "headsign": {"HE": "קיץ"}
+          }
+        }
+      },
+      {
+        "producer": "SIRI",
+        "eta": "not-a-timestamp",
+        "line_name": "249",
+        "operator_id": "15",
+        "route_id": "bad",
+        "destination_id": "1",
+        "static_info": {
+          "route": {
+            "agency": {"name": {"EN": "Metropoline"}},
+            "headsign": {"HE": "רע"}
+          }
+        }
+      }
+    ]
+  },
+  "stop_info": {
+    "name": {"HE": "תחנה", "EN": "Stop"}
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "errors": null,
+  "timestamp": "2026-10-27T21:20:04+02:00",
+  "visits": {
+    "20112": [
+      {
+        "producer": "SIRI",
+        "timestamp": "2026-10-27 21:19:47+02:00",
+        "stop_code": "20112",
+        "line_id": "18319",
+        "route_id": "18319",
+        "direction_id": "1",
+        "line_name": "283",
+        "operator_id": "25",
+        "destination_id": "23013",
+        "vehicle_ref": "63537101",
+        "eta": "2026-10-27 21:22:00+02:00",
+        "trip_id": "584716747_271026",
+        "status": null,
+        "departed": "2026-10-27 21:00:00+02:00",
+        "location": {
+          "lat": "32.136386",
+          "lon": "34.830078"
+        },
+        "static_info": {
+          "route": {
+            "destination": {
+              "code": "23013",
+              "name": {
+                "AR": "محطة مركزية تل أبيب - الطابق 7/تنزيل",
+                "EN": "Tel Aviv Central Bus Station 7th Floor/Alight",
+                "HE": "ת.מרכזית תל אביב קומה 7/הורדה"
+              },
+              "address": {
+                "street": "תחנה מרכזית קומה 7",
+                "city": "Tel Aviv Yafo",
+                "platform": "",
+                "floor": "",
+                "city_multilingual": {
+                  "HE": "תל אביב יפו",
+                  "EN": "Tel Aviv Yafo"
+                }
+              },
+              "location": {
+                "lat": 32.055636,
+                "lon": 34.780466
+              }
+            },
+            "agency": {
+              "name": {
+                "HE": "אלקטרה אפיקים",
+                "EN": "Afikim"
+              },
+              "url": "https://www.electra-afikim.co.il/"
+            },
+            "headsign": {
+              "HE": "תל אביב יפו_תחנה מרכזית"
+            }
+          }
+        }
+      },
+      {
+        "producer": "SIRI",
+        "timestamp": "2026-10-27 21:19:37+02:00",
+        "stop_code": "20112",
+        "line_id": "10119",
+        "route_id": "10119",
+        "direction_id": "1",
+        "line_name": "249",
+        "operator_id": "15",
+        "destination_id": "25354",
+        "vehicle_ref": "31676103",
+        "eta": "2026-10-27 21:48:00+02:00",
+        "trip_id": "586136892_271026",
+        "status": null,
+        "departed": "2026-10-27 21:15:00+02:00",
+        "location": {
+          "lat": "32.17641",
+          "lon": "34.9039"
+        },
+        "static_info": {
+          "route": {
+            "destination": {
+              "code": "25354",
+              "name": {
+                "AR": "محطة كرميليت/هَكرميل",
+                "EN": "Carmelit Terminal/Hacarmel",
+                "HE": "מסוף כרמלית/הכרמל"
+              },
+              "address": {
+                "street": "הכרמל 12",
+                "city": "Tel Aviv Yafo",
+                "platform": "",
+                "floor": "",
+                "city_multilingual": {
+                  "HE": "תל אביב יפו",
+                  "EN": "Tel Aviv Yafo"
+                }
+              },
+              "location": {
+                "lat": 32.066363,
+                "lon": 34.766098
+              }
+            },
+            "agency": {
+              "name": {
+                "HE": "מטרופולין",
+                "EN": "Metropoline"
+              },
+              "url": "http://www.metropoline.com"
+            },
+            "headsign": {
+              "HE": "תל אביב יפו_מסוף כרמלית"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "stop_info": {
+    "name": {
+      "AR": "مفترق چليلوت/طريق نَمير",
+      "EN": "Glilot Interchange/Namir Road",
+      "HE": "מחלף גלילות/דרך נמיר"
+    },
+    "address": {
+      "street": "דרך נמיר",
+      "city": "Tel Aviv Yafo",
+      "platform": "",
+      "floor": "",
+      "city_multilingual": {
+        "HE": "תל אביב יפו",
+        "EN": "Tel Aviv Yafo"
+      }
+    },
+    "location": {
+      "lat": 32.140196,
+      "lon": 34.800766
+    }
+  }
+}

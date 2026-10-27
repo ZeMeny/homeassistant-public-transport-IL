@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Project overview
-Home Assistant custom integration showing real-time arrivals for an Israeli public-transport bus line at a given stop. Status: early prototype - a standalone script works; the HA integration is an empty skeleton.
+Home Assistant custom integration showing real-time arrivals for an Israeli public-transport bus line at a given stop. Status: the package has an async curlbus client, a parser, and a 60 s per-stop coordinator. Config flow and sensors are still absent.
 
 ## Build & test
 ```bash
@@ -12,21 +12,18 @@ pytest
 ```
 
 ## Repo layout (current)
-- `__init__.py` (repo root) - prototype script; fetches arrivals from `https://curlbus.app/{stop_id}`. Kept until a later pull request ports it.
-- `custom_components/public_transport_il/` - Home Assistant integration package (`__init__.py`, `const.py`, `manifest.json`). Domain `public_transport_il`. `async_setup` returns true; no config flow yet.
+- `custom_components/public_transport_il/` - Home Assistant integration package. Domain `public_transport_il`. Modules: `__init__.py` (`async_setup` returns true; no config flow yet), `const.py`, `manifest.json`, `source.py` (arrival-source interface), `parser.py`, `curlbus.py`, and `coordinator.py` (one 60 s coordinator per stop).
 - `hacs.json` (repo root) - HACS metadata: `name`, `render_readme`, and `homeassistant`.
-- `tests/` - pytest suite (`test_init.py`, `test_manifest.py`).
+- `tests/` - pytest suite (`test_init.py`, `test_manifest.py`, `test_parser.py`, `test_client.py`, `test_coordinator.py`). Parser, client, and coordinator tests read `tests/fixtures/` and do not call the network.
 - `.github/workflows/ci.yml` - hassfest, HACS validation, ruff, and pytest.
 - `requirements_test.txt` and `pyproject.toml` - test and lint toolchain.
 
 ## Known issues
-- Prototype uses blocking `requests`; HA requires async I/O.
-- Prototype imports AppDaemon `hassapi`; not valid in an HA integration.
-- No config flow, coordinator, or sensor.
+- No config flow or sensor yet. The coordinator is not wired into setup until the config flow exists.
 
 ## Plan
-1. Restructure to `custom_components/public_transport_il/` + root `hacs.json`.
-2. Async curlbus client (aiohttp) with a 60 s `DataUpdateCoordinator`.
+1. Restructure to `custom_components/public_transport_il/` + root `hacs.json`. Done.
+2. Async curlbus client (aiohttp) with a 60 s `DataUpdateCoordinator`. Done.
 3. Config flow: stop code + line number.
 4. Sensor: minutes to next bus; upcoming arrivals as attributes.
 
