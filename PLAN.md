@@ -102,7 +102,7 @@ Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transp
    - `select_arrivals(snapshot, line_number, operator_id, route_id)` implements the match order from the Approach section. An empty selection returns an empty tuple and does not log an error.
    - Verify: `tests/test_coordinator.py::test_coordinator_publishes_snapshot`, `tests/test_coordinator.py::test_unreachable_marks_update_failed`, `tests/test_coordinator.py::test_one_poll_per_60s_shared_by_stop` (two subscribers, a counting fake source, `async_fire_time_changed` by 60 seconds, exactly one extra fetch), and `tests/test_coordinator.py::test_missing_line_is_successful_empty_update`.
 
-6. **Delete the prototype once the fixtures and parser cover it.**
+6. **[x] Delete the prototype once the fixtures and parser cover it.**
    - Delete root `__init__.py`.
    - Remove the prototype from the layout section of `AGENTS.md`.
    - Verify: `pytest` still passes, `rg "hassapi|import requests" custom_components tests` finds nothing, and CI is green.
