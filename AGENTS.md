@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Project overview
-Home Assistant custom integration showing real-time arrivals for an Israeli public-transport bus line at a given stop. Status: early prototype - a standalone script works; the HA integration is an empty skeleton.
+Home Assistant custom integration showing real-time arrivals for an Israeli public-transport bus line at a given stop. Status: the package has an async curlbus client, a parser, and a 60 s per-stop coordinator. Config flow and sensors are still absent.
 
 ## Build & test
 ```bash
@@ -22,8 +22,8 @@ pytest
 - No config flow or sensor yet. The coordinator is not wired into setup until the config flow exists.
 
 ## Plan
-1. Restructure to `custom_components/public_transport_il/` + root `hacs.json`.
-2. Async curlbus client (aiohttp) with a 60 s `DataUpdateCoordinator`.
+1. Restructure to `custom_components/public_transport_il/` + root `hacs.json`. Done.
+2. Async curlbus client (aiohttp) with a 60 s `DataUpdateCoordinator`. Done.
 3. Config flow: stop code + line number.
 4. Sensor: minutes to next bus; upcoming arrivals as attributes.
 
