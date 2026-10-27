@@ -40,7 +40,7 @@ A payload that simply does not contain the line is a successful update with an e
 
 A transport failure, a non-JSON body, or a curlbus `errors` list is `UpdateFailed`. Coordinator entities become unavailable and the next successful poll makes them available again. The interval stays 60 seconds.
 
-Minutes are computed in the sensor from timezone-aware ETAs and `homeassistant.util.dt.utcnow`. Visits more than 30 seconds in the past are dropped. The state is the floor of the remaining seconds divided by 60 (so a bus due in 50 seconds is `0`). An empty list after that filter is unknown (`None`), which Home Assistant displays as unknown. The state is an integer, device class duration, unit minutes.
+Minutes are computed in the sensor from timezone-aware ETAs and `homeassistant.util.dt.utcnow`. Minutes are `max(0, floor(remaining_seconds / 60))` once visits more than 30 seconds old have been dropped, so a visit up to 30 seconds in the past is `0`. An empty list after that filter is unknown (`None`), which Home Assistant displays as unknown. The state is an integer, device class duration, unit minutes.
 
 `live` is true when `producer` is `SIRI` or `GTFS-RT`. Any other producer is reported as scheduled. v1 does not invent a timetable row when curlbus lists no visit.
 
@@ -243,7 +243,7 @@ One pull request would be too large: it would combine a repository move, CI, a n
 6. The only curlbus request per poll is `GET /{stop_code}`. Lines at the same stop share that response. Operator `15` is confirmed with `GET /metropoline/{line}` during config and options validation when the live window has no visit for that line.
 7. Match by stored route id when it is present in the payload; otherwise by operator id plus line name plus stop code. Prefer operator `15` when several operators share the line number. Ignore `direction_id`. A single replacement route id is adopted when the stored one disappears.
 8. A missing line is a successful empty snapshot. It is not `UpdateFailed` and it is not logged at error. Unreachable curlbus, non-JSON bodies, and curlbus `errors` are `UpdateFailed`, so entities go unavailable and clear on the next success.
-9. ETAs keep their offset. Naive timestamps mean `Asia/Jerusalem`. Minutes are the floor of remaining whole minutes after dropping visits more than 30 seconds old. Sensor state `None` is the unknown state. `live` is true only for producers `SIRI` and `GTFS-RT`.
+9. ETAs keep their offset. Naive timestamps mean `Asia/Jerusalem`. Minutes are `max(0, floor(remaining_seconds / 60))` once visits more than 30 seconds old have been dropped, so a visit up to 30 seconds in the past is `0`. Sensor state `None` is the unknown state. `live` is true only for producers `SIRI` and `GTFS-RT`.
 10. Display names and headsigns use the Hebrew curlbus strings, with English as the fallback. The operator attribute prefers the English agency name.
 11. Sensors and the config flow depend on `ArrivalSource` and the factory `async_get_source`. They do not import the curlbus module.
 12. No runtime third-party dependencies. The prototype's per-destination HTTP lookup and its substring line match are not ported.
