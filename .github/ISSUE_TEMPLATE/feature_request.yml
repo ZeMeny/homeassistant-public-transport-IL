@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest a feature for this integration
+labels: ["feature-request"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you want?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why / what problem does it solve?
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or links
+    validations:
+      required: false
+  - type: checkboxes
+    id: new_data_source
+    attributes:
+      label: This may need a new data source or API key
+      options:
+        - label: This may need a new data source or API key
+          required: false
