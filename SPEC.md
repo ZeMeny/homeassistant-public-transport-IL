@@ -32,11 +32,12 @@ Alternative stops nearby: 25634 (Ibn Gvirol/Mane, next stop after 25629), 20105 
 - [ ] Polling happens at most once per 60 s per stop, shared by all sensors of that stop.
 - [ ] Unit tests cover parsing (including time zones and a missing line), the coordinator, and the config flow, using recorded curlbus fixtures; no network calls in tests.
 - [ ] README documents install, setup with the two example stops, and the data-source caveat.
+- [ ] After setup, the stop code and line number of an existing entry can be changed from the integration's Configure/options dialog (options flow) without deleting and re-adding it; the new values are validated against curlbus and the sensors update accordingly.
 
 ## Out of scope (v1)
 - Official Ministry of Transport SIRI integration, fixed-IP setup, or API keys.
 - Map or vehicle-position display, alerts, notifications, dashboards or custom Lovelace cards.
-- Journey planning or stop search by name (the user enters stop codes).
+- Stop search by street or name (planned for v2); in v1 the user enters stop codes.
 - Multiple lines per sensor, and operators other than the ones returned by the stop.
 
 ## Open questions for the human
