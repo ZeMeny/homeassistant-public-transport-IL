@@ -40,7 +40,7 @@ A payload that simply does not contain the line is a successful update with an e
 
 A transport failure, a non-JSON body, or a curlbus `errors` list is `UpdateFailed`. Coordinator entities become unavailable and the next successful poll makes them available again. The interval stays 60 seconds.
 
-Minutes are computed in the sensor from timezone-aware ETAs and `homeassistant.util.dt.utcnow`. Visits more than 30 seconds in the past are dropped. The state is the floor of the remaining seconds divided by 60 (so a bus due in 50 seconds is `0`). An empty list after that filter is unknown (`None`), which Home Assistant displays as unknown. The state is an integer, device class duration, unit minutes.
+Minutes are computed in the sensor from timezone-aware ETAs and `homeassistant.util.dt.utcnow`. Minutes are `max(0, floor(remaining_seconds / 60))` once visits more than 30 seconds old have been dropped, so a visit up to 30 seconds in the past is `0`. An empty list after that filter is unknown (`None`), which Home Assistant displays as unknown. The state is an integer, device class duration, unit minutes.
 
 `live` is true when `producer` is `SIRI` or `GTFS-RT`. Any other producer is reported as scheduled. v1 does not invent a timetable row when curlbus lists no visit.
 
@@ -60,7 +60,7 @@ Before the HACS description, topics, and license checks can pass, Meny sets thes
 
 ### PR 1 — Restructure and CI
 
-1. **Move the integration to the HACS path and the lowercase domain.**
+1. **[x] Move the integration to the HACS path and the lowercase domain.**
    - Create `custom_components/public_transport_il/` with `__init__.py`, `const.py`, and `manifest.json`.
    - `DOMAIN = "public_transport_il"`.
    - Manifest: `domain` `public_transport_il`, `name` `Public Transport IL`, `codeowners` `["@ZeMeny"]`, `config_flow` false (no flow module exists yet), `documentation` and `issue_tracker` pointing at this GitHub repository, `iot_class` `cloud_polling`, `requirements` `[]`, `version` `0.1.0`. Omit `integration_type`. `iot_class` is set only in this manifest. Hassfest requires the keys ordered `domain`, `name`, then alphabetical.
@@ -68,7 +68,7 @@ Before the HACS description, topics, and license checks can pass, Meny sets thes
    - Add root [`hacs.json`](hacs.json) with the keys the HACS schema accepts: `name` `Public Transport IL`, `render_readme` true, and `homeassistant` `2025.1.4` (the core version installed by `pytest-homeassistant-custom-component==0.13.205` on Python 3.12). The schema rejects `iot_class`, so that key is not part of `hacs.json`.
    - Verify: `python -c "from custom_components.public_transport_il.const import DOMAIN; assert DOMAIN == 'public_transport_il'"`. hassfest in CI accepts the manifest. HACS validation in CI finds `hacs.json` and `custom_components/public_transport_il/`.
 
-2. **Add the test and lint toolchain, and delete the old tree.**
+2. **[x] Add the test and lint toolchain, and delete the old tree.**
    - Root `requirements_test.txt` lists `pytest`, `pytest-homeassistant-custom-component==0.13.205`, and `ruff`. That plugin release is the newest one that still supports Python 3.12, and it installs Home Assistant 2025.1.4. Newer releases of the plugin require Python 3.13 or 3.14.
    - Root `pyproject.toml` configures Ruff for Python 3.12 (line length 88, lint rules `E`, `F`, `I`, `UP`, `B`, `SIM`) and pytest `testpaths = ["tests"]`.
    - `.github/workflows/ci.yml` runs four jobs on pull requests and on pushes to `main`: `hassfest` (`home-assistant/actions/hassfest`), `hacs` (`hacs/action` with `category: integration` and `ignore: brands`), `ruff` (`ruff check` and `ruff format --check`), and `pytest` (Python 3.12, install `requirements_test.txt`, run `pytest`). `ignore: brands` is temporary. The description, topics, and license checks pass once the prerequisites above are in place.
@@ -243,7 +243,7 @@ One pull request would be too large: it would combine a repository move, CI, a n
 6. The only curlbus request per poll is `GET /{stop_code}`. Lines at the same stop share that response. Operator `15` is confirmed with `GET /metropoline/{line}` during config and options validation when the live window has no visit for that line.
 7. Match by stored route id when it is present in the payload; otherwise by operator id plus line name plus stop code. Prefer operator `15` when several operators share the line number. Ignore `direction_id`. A single replacement route id is adopted when the stored one disappears.
 8. A missing line is a successful empty snapshot. It is not `UpdateFailed` and it is not logged at error. Unreachable curlbus, non-JSON bodies, and curlbus `errors` are `UpdateFailed`, so entities go unavailable and clear on the next success.
-9. ETAs keep their offset. Naive timestamps mean `Asia/Jerusalem`. Minutes are the floor of remaining whole minutes after dropping visits more than 30 seconds old. Sensor state `None` is the unknown state. `live` is true only for producers `SIRI` and `GTFS-RT`.
+9. ETAs keep their offset. Naive timestamps mean `Asia/Jerusalem`. Minutes are `max(0, floor(remaining_seconds / 60))` once visits more than 30 seconds old have been dropped, so a visit up to 30 seconds in the past is `0`. Sensor state `None` is the unknown state. `live` is true only for producers `SIRI` and `GTFS-RT`.
 10. Display names and headsigns use the Hebrew curlbus strings, with English as the fallback. The operator attribute prefers the English agency name.
 11. Sensors and the config flow depend on `ArrivalSource` and the factory `async_get_source`. They do not import the curlbus module.
 12. No runtime third-party dependencies. The prototype's per-destination HTTP lookup and its substring line match are not ported.
