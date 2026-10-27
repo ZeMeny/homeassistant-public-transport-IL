@@ -4,9 +4,10 @@
 Home Assistant custom integration showing real-time arrivals for an Israeli public-transport bus line at a given stop. Status: early prototype - a standalone script works; the HA integration is an empty skeleton.
 
 ## Build & test
-No build or tests yet. Planned:
 ```bash
-pip install -r requirements_test.txt   # pytest-homeassistant-custom-component
+pip install -r requirements_test.txt
+ruff check .
+ruff format --check .
 pytest
 ```
 
