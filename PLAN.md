@@ -96,7 +96,7 @@ Follow-up, not part of PR 1, PR 2, or PR 3: add `custom_components/public_transp
    - A single factory, `async_get_source(hass)`, is the only place that constructs `CurlbusClient`. A future SIRI client replaces that factory's return value.
    - Verify: `tests/test_client.py::test_fetch_stop_uses_injected_session` asserts the request path and header against a mocked session and a fixture body. `tests/test_client.py::test_metropoline_line_lookup` covers the route-alternatives check. No test opens a connection to curlbus.
 
-5. **Add the 60-second coordinator, shared per stop.**
+5. **[x] Add the 60-second coordinator, shared per stop.**
    - Add `coordinator.py`. `PublicTransportCoordinator` is a `DataUpdateCoordinator` with `update_interval = timedelta(seconds=60)`. `_async_update_data` calls `async_get_stop`. Source-unavailable and bad-response errors become `UpdateFailed`. A stop that previously worked and later returns curlbus `errors` is also `UpdateFailed`.
    - A registry in `hass.data[DOMAIN]["coordinators"]`, keyed by stop code, holds one coordinator plus a subscriber count. The first subscriber creates it and performs the initial refresh. Another subscriber for the same stop reuses it and does not refresh again. The last unsubscribe drops the registry entry so an unused stop is not polled.
    - `select_arrivals(snapshot, line_number, operator_id, route_id)` implements the match order from the Approach section. An empty selection returns an empty tuple and does not log an error.
