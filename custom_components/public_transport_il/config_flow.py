@@ -11,6 +11,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import callback
+from homeassistant.helpers import selector
 
 from . import source as arrival_source
 from .const import (
@@ -41,14 +42,11 @@ class _FormError(Exception):
         self.key = key
 
 
-def _digits(value: Any) -> str:
-    """Accept a non-empty digit string and reject everything else."""
-    if not isinstance(value, str):
-        raise vol.Invalid("must be digits")
-    text = value.strip()
-    if not text.isdigit():
-        raise vol.Invalid("must be digits")
-    return text
+# A text selector serializes into a form field. A bare validator does not,
+# and the add-integration dialog then fails to load.
+_TEXT_SELECTOR = selector.TextSelector(
+    selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
+)
 
 
 def _schema(defaults: Mapping[str, Any] | None = None) -> vol.Schema:
@@ -62,10 +60,20 @@ def _schema(defaults: Mapping[str, Any] | None = None) -> vol.Schema:
 
     return vol.Schema(
         {
-            _field(CONF_STOP_CODE): _digits,
-            _field(CONF_LINE_NUMBER): _digits,
+            _field(CONF_STOP_CODE): _TEXT_SELECTOR,
+            _field(CONF_LINE_NUMBER): _TEXT_SELECTOR,
         }
     )
+
+
+def _strip_stop_and_line(user_input: Mapping[str, Any]) -> dict[str, Any]:
+    """Strip spaces around the stop code and line number."""
+    stripped = dict(user_input)
+    for key in (CONF_STOP_CODE, CONF_LINE_NUMBER):
+        value = stripped[key]
+        if isinstance(value, str):
+            stripped[key] = value.strip()
+    return stripped
 
 
 def _title(data: Mapping[str, str]) -> str:
@@ -102,12 +110,19 @@ async def async_validate_stop_and_line(
 ) -> dict[str, str]:
     """Validate one stop and line and return the data to store on the entry.
 
-    curlbus ``errors`` become ``invalid_stop``. Connection and bad-body
-    failures become ``cannot_connect``. A line that is absent, and that
-    Metropoline does not publish, is ``line_not_found``. Several operators
-    without Metropoline are ``ambiguous_line``.
+    Values that are not digit strings become ``invalid_format``. The form
+    accepts any string so its schema can be serialized. curlbus ``errors``
+    become ``invalid_stop``. Connection and bad-body failures become
+    ``cannot_connect``. A line that is absent, and that Metropoline does not
+    publish, is ``line_not_found``. Several operators without Metropoline are
+    ``ambiguous_line``.
     """
-    if not stop_code.isdigit() or not line_number.isdigit():
+    if (
+        not isinstance(stop_code, str)
+        or not isinstance(line_number, str)
+        or not stop_code.isdigit()
+        or not line_number.isdigit()
+    ):
         raise _FormError("invalid_format")
 
     try:
@@ -165,6 +180,7 @@ class PublicTransportILConfigFlow(ConfigFlow, domain=DOMAIN):
         """Ask for a stop code and a line number."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            user_input = _strip_stop_and_line(user_input)
             try:
                 data = await async_validate_stop_and_line(
                     arrival_source.async_get_source(self.hass),
@@ -206,6 +222,7 @@ class PublicTransportILOptionsFlow(OptionsFlow):
         """Show the same two fields, prefilled from the entry."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            user_input = _strip_stop_and_line(user_input)
             try:
                 data = await async_validate_stop_and_line(
                     arrival_source.async_get_source(self.hass),
