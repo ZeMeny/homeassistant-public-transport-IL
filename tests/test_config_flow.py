@@ -6,9 +6,11 @@ from unittest.mock import patch
 
 import pytest
 import voluptuous as vol
+import voluptuous_serialize
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
@@ -93,6 +95,36 @@ async def _submit(
         flow_id,
         {CONF_STOP_CODE: stop_code, CONF_LINE_NUMBER: line_number},
     )
+
+
+def _assert_form_schema_serializes(result: dict[str, object]) -> None:
+    """Serialize a shown form the way the frontend loader does.
+
+    ``helpers/data_entry_flow.py`` converts ``data_schema`` with
+    ``voluptuous_serialize.convert(..., custom_serializer=cv.custom_serializer)``
+    before the form is sent. A bare validator such as ``_digits`` raises here,
+    which is the add-integration 500.
+    """
+    assert result["type"] is FlowResultType.FORM
+    schema = result["data_schema"]
+    assert isinstance(schema, vol.Schema)
+    try:
+        serialized = voluptuous_serialize.convert(
+            schema, custom_serializer=cv.custom_serializer
+        )
+    except (TypeError, ValueError) as err:
+        pytest.fail(
+            "form data_schema is not serializable "
+            f"({type(err).__name__}: {err}); schema={schema.schema}"
+        )
+    assert isinstance(serialized, list)
+    assert {field["name"] for field in serialized} == {
+        CONF_STOP_CODE,
+        CONF_LINE_NUMBER,
+    }
+    for field in serialized:
+        assert field["required"] is True
+        assert field["selector"]["text"]["type"] == "text"
 
 
 def _schema_defaults(schema: vol.Schema) -> dict[str, object]:
@@ -347,6 +379,124 @@ async def test_options_flow_changes_stop_and_line(hass: HomeAssistant) -> None:
     state = hass.states.get(entities[0].entity_id)
     assert state is not None
     assert state.state == "unknown"
+
+
+@pytest.mark.parametrize(
+    ("stop_code", "line_number"),
+    [
+        ("abc", "249"),
+        ("20112", "24a"),
+        ("", "249"),
+        ("   ", "249"),
+        ("20112", ""),
+    ],
+)
+async def test_config_flow_rejects_non_digits(
+    hass: HomeAssistant, stop_code: str, line_number: str
+) -> None:
+    """Non-digits stay on the form as invalid_format and do not call the source."""
+    source = FakeSource({})
+
+    with _patch(source):
+        start = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+        result = await _submit(hass, start["flow_id"], stop_code, line_number)
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "invalid_format"}
+    assert _schema_defaults(result["data_schema"]) == {
+        CONF_STOP_CODE: stop_code.strip(),
+        CONF_LINE_NUMBER: line_number.strip(),
+    }
+    _assert_form_schema_serializes(result)
+    assert source.stop_calls == []
+    assert hass.config_entries.async_entries(DOMAIN) == []
+
+
+async def test_config_flow_strips_surrounding_spaces(hass: HomeAssistant) -> None:
+    """Spaces around a stop code and line number are stored without the spaces."""
+    source = FakeSource({"20112": _snapshot("stop_20112_has_249.json", "20112")})
+
+    with _patch(source):
+        entry = await _create_entry(hass, source, " 20112 ", " 249 ")
+
+    assert entry.data[CONF_STOP_CODE] == "20112"
+    assert entry.data[CONF_LINE_NUMBER] == "249"
+    assert entry.unique_id == "20112_249_15"
+    assert source.stop_calls == ["20112", "20112"]
+
+
+async def test_options_flow_rejects_non_digits(hass: HomeAssistant) -> None:
+    """Configure rejects a non-digit value and leaves the entry unchanged."""
+    source = FakeSource({"20112": _snapshot("stop_20112_has_249.json", "20112")})
+
+    with _patch(source):
+        entry = await _create_entry(hass, source, "20112", "249")
+        original = dict(entry.data)
+        calls_before = list(source.stop_calls)
+        start = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await _submit(hass, start["flow_id"], " 24a ", "249", options=True)
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "invalid_format"}
+    assert _schema_defaults(result["data_schema"]) == {
+        CONF_STOP_CODE: "24a",
+        CONF_LINE_NUMBER: "249",
+    }
+    _assert_form_schema_serializes(result)
+    assert dict(entry.data) == original
+    assert source.stop_calls == calls_before
+
+
+async def test_options_flow_strips_surrounding_spaces(hass: HomeAssistant) -> None:
+    """Configure stores a stop code and line number without surrounding spaces."""
+    source = FakeSource(
+        {
+            "20112": _snapshot("stop_20112_has_249.json", "20112"),
+            "25629": _snapshot("stop_25629_no_249.json", "25629"),
+        },
+        served={("15", "249")},
+    )
+
+    with _patch(source):
+        entry = await _create_entry(hass, source, "20112", "249")
+        start = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await _submit(hass, start["flow_id"], " 25629 ", " 249 ", options=True)
+        await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.data[CONF_STOP_CODE] == "25629"
+    assert entry.data[CONF_LINE_NUMBER] == "249"
+    assert entry.unique_id == arrival_unique_id("25629", "249", "15")
+
+
+async def test_every_shown_form_schema_serializes(hass: HomeAssistant) -> None:
+    """User and options forms, including a redisplay, must serialize."""
+    source = FakeSource(
+        {
+            "20112": _snapshot("stop_20112_has_249.json", "20112"),
+            "99999999": StopNotFoundError("Invalid stop code 99999999"),
+        }
+    )
+
+    with _patch(source):
+        user = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+        _assert_form_schema_serializes(user)
+
+        rejected = await _submit(hass, user["flow_id"], "99999999", "249")
+        _assert_form_schema_serializes(rejected)
+
+        entry = await _create_entry(hass, source, "20112", "249")
+        options = await hass.config_entries.options.async_init(entry.entry_id)
+        _assert_form_schema_serializes(options)
+
+        options_rejected = await _submit(
+            hass, options["flow_id"], "99999999", "249", options=True
+        )
+        _assert_form_schema_serializes(options_rejected)
 
 
 def test_config_flow_and_sensor_do_not_import_curlbus() -> None:
